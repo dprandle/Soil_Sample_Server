@@ -3,16 +3,17 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const Server = http.createServer(app);
-const io = require("socket.io")(Server, { cors: { origin: "http://localhost:3000", methods: ["GET", "POST"] } });
+const io = require("socket.io")(Server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 const path = require('path');
 const PORT = process.env.PORT || 3001;
 //const index = require('./routes/index');
 
 //app.use(index);
 
-var gsocket = {};
+var gsockets = [];
 const Serial_Port = require('serialport');
-const Inter_Byte_Timeout = require('@serialport/parser-inter-byte-timeout')
+const Inter_Byte_Timeout = require('@serialport/parser-inter-byte-timeout');
+const { Console } = require('console');
 const devport = new Serial_Port('/dev/ttyACM1');
 const ibt_parser = devport.pipe(new Inter_Byte_Timeout({ interval: 50 }))
 function Node_Data() {
@@ -38,6 +39,7 @@ function RTC_Source_Cycles() {
     this.frame_extra_drift_listen = 1;
     this.packet_listen = 1;
     this.tx_to_rx_measured_delay = 1;
+    this.padding = 1;
 }
 
 function RTC_Set_Values() {
@@ -94,18 +96,27 @@ ibt_parser.on('data', function (data) {
         tspacket_temp = new Timeslot_Packet();
         current_ind = 0;
     }
-    else if (data.length == 49) {
+    else if (data.length == 64) {
+        recurse_obj_parse(tspacket_temp, data);
+        timeslots[tspacket_temp.timeslot] = tspacket_temp;
+        tspacket_temp = new Timeslot_Packet();
+        recurse_obj_parse(tspacket_temp, data);
+        timeslots[tspacket_temp.timeslot] = tspacket_temp;
+        tspacket_temp = new Timeslot_Packet();
+        current_ind = 0;
+    }
+    else if (data.length == 50) {
         recurse_obj_parse(frame_data, data);
-        for (let i = 0; i < 8; ++i)
-        {
-            let val = data[current_ind + i*2];
-            val |= (data[current_ind + i*2 + 1] << 8);
+        for (let i = 0; i < 8; ++i) {
+            let val = data[current_ind + i * 2];
+            val |= (data[current_ind + i * 2 + 1] << 8);
             node_data.push(val);
         }
-        if (Object.keys(gsocket).length !== 0) {
-            gsocket.emit("FrameData", frame_data);
-            gsocket.emit("NodeData", node_data);
-            gsocket.emit("TimeslotData", timeslots);
+        console.log(node_data);
+        for (let sckt of gsockets) {
+            sckt.emit("FrameData", frame_data);
+            sckt.emit("NodeData", node_data);
+            sckt.emit("TimeslotData", timeslots);
         }
         frame_data = new Node_Control_Data();
         node_data = [];
@@ -113,15 +124,19 @@ ibt_parser.on('data', function (data) {
         current_ind = 0;
     }
     else {
-        console.log("Invalid Data on Serial Port - Skipping");
+        console.log("Invalid packet of %d bytes on Serial Port - Skipping", data.length);
+
     }
 });
 
 io.on("connection", (socket) => {
     console.log("New client connected");
-    gsocket = socket;
+    gsockets.push(socket);
     socket.on("disconnect", () => {
         console.log("Client disconnected");
+        let ind = gsockets.indexOf(socket);
+        if (ind > -1)
+            gsockets.splice(ind,1);
     });
 });
 

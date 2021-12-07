@@ -2,7 +2,7 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import socketIOClient from "socket.io-client";
-const ENDPOINT = "http://localhost:3001";
+const ENDPOINT = "http://192.168.186.201:3001";
 
 
 function Timeslot_Element(props) {
