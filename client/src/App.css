@@ -1,38 +1,58 @@
 .App {
-  text-align: left;
+    background-color: #EAF0CE;
+    display:grid;
+    text-decoration-color: #011627;
+    justify-content: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.Frame {
+    border: 20px solid #574B60;
+    width:fit-content;
+    height:fit-content;
+    background-color: #C0C5C1;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.NodeTitle {
+    text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.Node {
+    border: 1px solid #3F334D;
+    margin: 10px;
+    text-align: center;
+    width: fit-content;
+    height:100px;
+    position: relative;
+    font-size: x-large;
+    background-color: #C0C5C1
 }
 
-.App-link {
-  color: #61dafb;
+.Nodes {
+    border: 10px solid #3F334D;
+    margin: 10px;
+    padding: 0px;
+    text-align: center;
+    width: fit-content;
+    height: fit-content;
+    position: relative;
+    display: flex;
+    font-size: x-large;
+    background-color: #7D8491;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.FrameTitle {
+    text-align: center;
+}
+
+.Timeslot {
+    font-size: 16px;
+    text-transform: capitalize;
+    border: 3px outset #3F334D;
+    text-align: left;
+    padding: 3px;
+    margin: 3px;
+}
+
+.TimeslotElement {
+    text-align: left;
 }
